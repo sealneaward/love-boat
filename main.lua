@@ -23,7 +23,7 @@ local equipment = {
 }
 
 
-function addScoreToTile(score, x, y)
+function addScoreToTile(score, tiles, x, y)
     if x >= 1 and x <= 12 and y >= 1 and y <= 12 then
         if type(tiles[y][x]) == "number" then
             tiles[y][x] = tiles[y][x] + score
@@ -32,19 +32,22 @@ function addScoreToTile(score, x, y)
 end
 
 
-function recalculateScores()
-    -- Zero out all the empty squares
+function calculateScores(tiles)
+    local newTiles = {}
     for i, row in ipairs(tiles) do
+        table.insert(newTiles, {})
         for j, square in ipairs(row) do
             if type(square) == "number" then
-                tiles[i][j] = 0
+                table.insert(newTiles[i], 0)
+            else
+                table.insert(newTiles[i], square)
             end
         end
     end
 
     -- For each piece of security equipment,
     --   add score to empty squares in range
-    for i, row in ipairs(tiles) do
+    for i, row in ipairs(newTiles) do
         for j, square in ipairs(row) do
             if type(square) == "string" then
                 if square ~= "wall" then
@@ -54,36 +57,36 @@ function recalculateScores()
                     for y_offset = 0, range-1 do
                         local y = y_offset + i - range
                         for x = (j - y_offset), (j + y_offset) do
-                            addScoreToTile(score, x, y)
+                            addScoreToTile(score, newTiles, x, y)
                         end
                     end
 
                     for x = (j - range), (j - 1) do
-                        addScoreToTile(score, x, i)
+                        addScoreToTile(score, newTiles, x, i)
                     end
                     for x = (j + 1), (j + range) do
-                        addScoreToTile(score, x, i)
+                        addScoreToTile(score, newTiles, x, i)
                     end
 
                     for y_offset = range-1, 0, -1 do
                         local y = i + range - y_offset
                         for x = (j - y_offset), (j + y_offset) do
-                            addScoreToTile(score, x, y)
+                            addScoreToTile(score, newTiles, x, y)
                         end
                     end
                 end
             end
         end
     end
-    recalculateStats()
+    return newTiles
 end
 
 
-function recalculateStats()
-    empty_squares = 0
-    covered_squares = 0
-    cost = 0
-    score = 0
+function calculateStats(tiles)
+    local empty_squares = 0
+    local covered_squares = 0
+    local cost = 0
+    local score = 0
 
     for i, row in ipairs(tiles) do
         for j, square in ipairs(row) do
@@ -99,6 +102,7 @@ function recalculateStats()
             end
         end
     end
+    return empty_squares, covered_squares, cost, score
 end
 
 
@@ -107,6 +111,9 @@ function love.load()
     floor_sprite = love.graphics.newImage("tiles/Floor.png")
     wall_sprite = love.graphics.newImage("tiles/Wall.png")
     camera_sprite = love.graphics.newImage("tiles/CCTV.png")
+    movement_detector_sprite = love.graphics.newImage("tiles/Motion.png")
+    laser_sprite = love.graphics.newImage("tiles/laser.png")
+
 
     for line in love.filesystem.lines("map.txt") do
         local row = {}
@@ -120,7 +127,7 @@ function love.load()
         table.insert(tiles, row)
     end
 
-    recalculateStats()
+    empty_squares, covered_squares, cost, score = calculateStats(tiles)
 end
 
 
@@ -137,6 +144,10 @@ function love.draw()
 
                 if square == "security_camera" then
                     love.graphics.draw(camera_sprite, x, y)
+                elseif square == "movement_detector" then
+                    love.graphics.draw(movement_detector_sprite, x, y)
+                elseif square == "laser" then
+                    love.graphics.draw(laser_sprite, x, y)
                 end
             end
             
@@ -182,5 +193,6 @@ function love.mousepressed(mouse_x, mouse_y)
         tiles[y][x] = "wall"
     end
 
-    recalculateScores()
+    tiles = calculateScores(tiles)
+    empty_squares, covered_squares, cost, score = calculateStats(tiles)
 end
