@@ -84,6 +84,21 @@ function recalculateStats()
     covered_squares = 0
     cost = 0
     score = 0
+
+    for i, row in ipairs(tiles) do
+        for j, square in ipairs(row) do
+            if type(square) == "number" then
+                if square == 0 then
+                    empty_squares = empty_squares + 1
+                else
+                    covered_squares = covered_squares + 1
+                end
+                score = score + square
+            elseif square ~= "wall" then
+                cost = cost + equipment[square].cost
+            end
+        end
+    end
 end
 
 
