@@ -1,0 +1,17 @@
+{
+ "Security_camera": {
+   "cost": 120,
+   "score": 3,
+   "range": 3
+ },
+ "movement_detector": {
+   "cost": 200,
+   "score": 2,
+   "range": 4
+ },
+ "laser": {
+   "cost": 500,
+   "score": 6,
+   "range": 5
+ }
+}
