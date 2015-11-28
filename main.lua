@@ -1,7 +1,8 @@
 local tiles = {}
-local emptySquares
-local coveredSquares
+local empty_squares
+local covered_squares
 local cost
+local score
 
 local equipment = {
     security_camera = {
@@ -74,11 +75,20 @@ function recalculateScores()
             end
         end
     end
+    recalculateStats()
+end
+
+
+function recalculateStats()
+    empty_squares = 0
+    covered_squares = 0
+    cost = 0
+    score = 0
 end
 
 
 function love.load()
-    love.window.setMode(768, 768)
+    love.window.setMode(1024, 768)
     floor_sprite = love.graphics.newImage("tiles/Floor.png")
     wall_sprite = love.graphics.newImage("tiles/Wall.png")
     camera_sprite = love.graphics.newImage("tiles/CCTV.png")
@@ -94,6 +104,8 @@ function love.load()
         end
         table.insert(tiles, row)
     end
+
+    recalculateStats()
 end
 
 
@@ -123,6 +135,16 @@ function love.draw()
             end
         end
     end
+
+    local x = 768 + 12
+    local y = 0 + 12
+    love.graphics.print("Cost: "..cost, x, y)
+    y = y + 18
+    love.graphics.print("Score: "..score, x, y)
+    y = y + 18
+    love.graphics.print("Empty squares: "..empty_squares, x, y)
+    y = y + 18
+    love.graphics.print("Covered squares: "..covered_squares, x, y)
 end
 
 
